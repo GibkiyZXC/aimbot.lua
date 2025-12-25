@@ -1,6 +1,4 @@
--- SWILL Auto Triggerbot (стреляет при наведении) + Aimbot + Wallhack
--- Навёл на врага — сразу стреляет автоматически
-
+-- SWILL Auto Triggerbot (стреляет при наведении) + Aimbot + Wallhack + Hitbox
 local Players = game:GetService("Players")
 local RunService = game:GetService("RunService")
 local UserInputService = game:GetService("UserInputService")
@@ -13,7 +11,7 @@ local Rayfield = loadstring(game:HttpGet('https://sirius.menu/rayfield'))()
 -- Окно
 local Window = Rayfield:CreateWindow({
     Name = "SWILL Auto Trigger",
-    LoadingTitle = "Auto Trigger + Aimbot + VH",
+    LoadingTitle = "Auto Trigger + Aimbot + VH + Hitbox",
     LoadingSubtitle = "by Swill Way",
     ConfigurationSaving = {Enabled = true, FolderName = "SWILL_AutoTrigger", FileName = "Config"}
 })
@@ -23,13 +21,15 @@ local MainTab = Window:CreateTab("Aimbot", 4483362458)
 local VHTab = Window:CreateTab("Wallhack", 4483362458)
 local TriggerTab = Window:CreateTab("Auto Trigger", 4483362458)
 local VisualTab = Window:CreateTab("Visuals", 4483362458)
+local HitboxTab = Window:CreateTab("Hitbox", 4483362458) -- Новая вкладка для хитбоксов
 
 -- Настройки
 local Settings = {
     Aimbot = {Enabled = true, TeamCheck = true, VisibleCheck = true, AimPart = "Head", Smoothness = 0.15},
     ESP = {Enabled = true, Box = true, Tracer = true, HealthBar = true, EnemyColor = Color3.fromRGB(255,0,0), TeamColor = Color3.fromRGB(0,255,0)},
-    Trigger = {Enabled = true, Delay = 0.05, TeamCheck = true},  -- Delay между выстрелами
-    FOV = {Radius = 120, Show = true, Color = Color3.fromRGB(255,255,255)}
+    Trigger = {Enabled = true, Delay = 0.05, TeamCheck = true},
+    FOV = {Radius = 120, Show = true, Color = Color3.fromRGB(255,255,255)},
+    Hitbox = {Enabled = false, Size = 5, Transparency = 0.7, Part = "Head"} -- Новые настройки хитбоксов
 }
 
 -- FOV круг
@@ -41,16 +41,19 @@ FOVCircle.Transparency = 1
 -- ESP объекты
 local ESPObjects = {}
 
+-- Хранилище оригинальных размеров хитбоксов
+local OriginalHitboxSizes = {}
+
 -- Получение ближайшего врага в FOV
 local function GetClosestEnemy()
     local Closest = nil
     local ClosestDist = Settings.FOV.Radius
     local MousePos = UserInputService:GetMouseLocation()
-    
+   
     for _, Player in pairs(Players:GetPlayers()) do
         if Player ~= LocalPlayer and Player.Character and Player.Character:FindFirstChild("Humanoid") and Player.Character.Humanoid.Health > 0 then
             if Settings.Trigger.TeamCheck and Player.Team == LocalPlayer.Team then continue end
-            
+           
             local Part = Player.Character:FindFirstChild(Settings.Aimbot.AimPart)
             if Part then
                 local ScreenPos, OnScreen = Camera:WorldToViewportPoint(Part.Position)
@@ -84,14 +87,14 @@ local function CreateESP(Player)
     Box.Thickness = 2
     Box.Filled = false
     Box.Transparency = 1
-    
+   
     local Tracer = Drawing.new("Line")
     Tracer.Thickness = 2
     Tracer.Transparency = 1
-    
+   
     local HB_BG = Drawing.new("Square")
     local HB_FG = Drawing.new("Square")
-    
+   
     ESPObjects[Player] = {Box = Box, Tracer = Tracer, HB_BG = HB_BG, HB_FG = HB_FG}
 end
 
@@ -106,36 +109,36 @@ local function UpdateESP()
         end
         return
     end
-    
+   
     for Player, objs in pairs(ESPObjects) do
         local Char = Player.Character
         if Char and Char:FindFirstChild("Head") and Char:FindFirstChild("HumanoidRootPart") and Char:FindFirstChild("Humanoid") and Char.Humanoid.Health > 0 then
             local Head = Char.Head
             local Root = Char.HumanoidRootPart
-            
+           
             local HeadPos = Camera:WorldToViewportPoint(Head.Position + Vector3.new(0, 0.5, 0))
             local TopPos = Camera:WorldToViewportPoint(Root.Position + Vector3.new(0, 3, 0))
             local BottomPos = Camera:WorldToViewportPoint(Root.Position - Vector3.new(0, 5, 0))
-            
+           
             if HeadPos.Z > 0 then
                 local Height = math.abs(TopPos.Y - BottomPos.Y)
                 local Width = Height / 2
                 local Color = (Player.Team == LocalPlayer.Team) and Settings.ESP.TeamColor or Settings.ESP.EnemyColor
-                
+               
                 if Settings.ESP.Box then
                     objs.Box.Size = Vector2.new(Width, Height)
                     objs.Box.Position = Vector2.new(TopPos.X - Width/2, TopPos.Y - Height/2)
                     objs.Box.Color = Color
                     objs.Box.Visible = true
                 end
-                
+               
                 if Settings.ESP.Tracer then
                     objs.Tracer.From = Vector2.new(Camera.ViewportSize.X / 2, Camera.ViewportSize.Y)
                     objs.Tracer.To = Vector2.new(TopPos.X, TopPos.Y)
                     objs.Tracer.Color = Color
                     objs.Tracer.Visible = true
                 end
-                
+               
                 if Settings.ESP.HealthBar then
                     local Health = Char.Humanoid.Health / Char.Humanoid.MaxHealth
                     objs.HB_BG.Size = Vector2.new(4, Height)
@@ -143,7 +146,7 @@ local function UpdateESP()
                     objs.HB_BG.Color = Color3.new(0,0,0)
                     objs.HB_BG.Transparency = 0.5
                     objs.HB_BG.Visible = true
-                    
+                   
                     objs.HB_FG.Size = Vector2.new(4, Height * Health)
                     objs.HB_FG.Position = Vector2.new(TopPos.X - Width/2 - 7, TopPos.Y - Height/2 + Height * (1 - Health))
                     objs.HB_FG.Color = Color3.fromRGB(0,255,0):Lerp(Color3.fromRGB(255,0,0), 1 - Health)
@@ -164,15 +167,48 @@ local function UpdateESP()
     end
 end
 
--- Инициализация ESP
+-- Новая функция: Управление хитбоксами
+local function UpdateHitboxes()
+    for _, Player in pairs(Players:GetPlayers()) do
+        if Player ~= LocalPlayer and Player.Character and Player.Character:FindFirstChild(Settings.Hitbox.Part) then
+            local Part = Player.Character[Settings.Hitbox.Part]
+            if Settings.Hitbox.Enabled then
+                -- Сохраняем оригинальный размер, если ещё не сохранён
+                if not OriginalHitboxSizes[Player] then
+                    OriginalHitboxSizes[Player] = Part.Size
+                end
+                -- Увеличиваем хитбокс
+                Part.Size = Vector3.new(Settings.Hitbox.Size, Settings.Hitbox.Size, Settings.Hitbox.Size)
+                Part.Transparency = Settings.Hitbox.Transparency
+                Part.CanCollide = false -- Отключаем коллизию, чтобы не ломать физику
+            else
+                -- Восстанавливаем оригинальный размер
+                if OriginalHitboxSizes[Player] then
+                    Part.Size = OriginalHitboxSizes[Player]
+                    Part.Transparency = 0
+                    Part.CanCollide = true
+                end
+            end
+        end
+    end
+end
+
+-- Инициализация ESP и хитбоксов
 for _, Player in pairs(Players:GetPlayers()) do
     if Player ~= LocalPlayer then
         CreateESP(Player)
-        Player.CharacterAdded:Connect(function() CreateESP(Player) end)
+        Player.CharacterAdded:Connect(function()
+            CreateESP(Player)
+            UpdateHitboxes() -- Обновляем хитбоксы при появлении персонажа
+        end)
     end
 end
+
 Players.PlayerAdded:Connect(function(Player)
-    Player.CharacterAdded:Connect(function() CreateESP(Player) end)
+    Player.CharacterAdded:Connect(function()
+        CreateESP(Player)
+        UpdateHitboxes() -- Обновляем хитбоксы для нового игрока
+    end)
 end)
 
 -- Последняя цель для предотвращения спама выстрелов
@@ -185,21 +221,23 @@ RunService.RenderStepped:Connect(function()
     FOVCircle.Radius = Settings.FOV.Radius
     FOVCircle.Color = Settings.FOV.Color
     FOVCircle.Position = UserInputService:GetMouseLocation()
-    
+   
     -- Aimbot
     local Target = GetClosestEnemy()
     if Settings.Aimbot.Enabled and Target then
         local AimCFrame = CFrame.new(Camera.CFrame.Position, Target.Part.Position)
         Camera.CFrame = Camera.CFrame:Lerp(AimCFrame, Settings.Aimbot.Smoothness)
     end
-    
+   
     -- ESP
     UpdateESP()
-    
-    -- Автоматический Triggerbot: стреляет, когда навёл на врага
+   
+    -- Хитбоксы
+    UpdateHitboxes()
+   
+    -- Автоматический Triggerbot
     if Settings.Trigger.Enabled and Target then
         if Target ~= LastTarget then
-            -- Новый враг — сразу стреляем
             mouse1press()
             task.wait(Settings.Trigger.Delay)
             mouse1release()
@@ -228,6 +266,11 @@ VHTab:CreateToggle({Name = "Health Bar", CurrentValue = true, Callback = functio
 VisualTab:CreateToggle({Name = "Show FOV", CurrentValue = true, Callback = function(v) Settings.FOV.Show = v end})
 VisualTab:CreateSlider({Name = "FOV Radius", Range = {10, 500}, Increment = 10, CurrentValue = 120, Callback = function(v) Settings.FOV.Radius = v end})
 
-Rayfield:Notify({Title = "SWILL Auto Trigger", Content = "Навёл — и сразу стреляет! Готово.", Duration = 7})
+-- Новое меню для хитбоксов
+HitboxTab:CreateToggle({Name = "Hitbox Enabled", CurrentValue = false, Callback = function(v) Settings.Hitbox.Enabled = v end})
+HitboxTab:CreateSlider({Name = "Hitbox Size", Range = {2, 10}, Increment = 0.5, CurrentValue = 5, Callback = function(v) Settings.Hitbox.Size = v end})
+HitboxTab:CreateSlider({Name = "Hitbox Transparency", Range = {0, 1}, Increment = 0.1, CurrentValue = 0.7, Callback = function(v) Settings.Hitbox.Transparency = v end})
+HitboxTab:CreateDropdown({Name = "Hitbox Part", Options = {"Head", "HumanoidRootPart"}, CurrentOption = "Head", Callback = function(o) Settings.Hitbox.Part = o end})
 
-print("SWILL Auto Triggerbot (стреляет при наведении) загружен!")
+Rayfield:Notify({Title = "SWILL Auto Trigger", Content = "Навёл — и сразу стреляет! Хитбоксы добавлены.", Duration = 7})
+print("SWILL Auto Triggerbot (стреляет при наведении) с хитбоксами загружен!")
