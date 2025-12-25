@@ -15,9 +15,9 @@ local Rayfield = loadstring(game:HttpGet('https://sirius.menu/rayfield'))()
 
 -- Окно
 local Window = Rayfield:CreateWindow({
-    Name = "SWILL Auto Trigger",
-    LoadingTitle = "Fixed Menu + Instant Aimbot",
-    LoadingSubtitle = "by Swill Way",
+    Name = "Liriks",
+    LoadingTitle = "ЧЕЛАНА ГОЛОВЫЙ",
+    LoadingSubtitle = "by gibkiy_morch",
     ConfigurationSaving = {Enabled = true, FolderName = "SWILL_AutoTrigger", FileName = "Config"}
 })
 
