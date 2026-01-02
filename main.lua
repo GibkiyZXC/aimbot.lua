@@ -14,9 +14,9 @@ local Rayfield = loadstring(game:HttpGet('https://sirius.menu/rayfield'))()
 
 -- Window
 local Window = Rayfield:CreateWindow({
-    Name = "Tsunami",
-    LoadingTitle = "Tsunami,
-    LoadingSubtitle = "by gibkiy_morch | Updated 02.01.2026",
+    Name = "SWILL Auto Trigger",
+    LoadingTitle = "Camera Aimbot + Boxes + Perfect Skeleton",
+    LoadingSubtitle = "by Swill Way | Updated 02.01.2026",
     ConfigurationSaving = {Enabled = true, FolderName = "SWILL_AutoTrigger", FileName = "Config"}
 })
 
@@ -399,5 +399,5 @@ SpeedTab:CreateSlider({Name = "Walk Speed", Range = {16, 300}, Increment = 5, Su
 ExtraTab:CreateToggle({Name = "Stretch Screen", CurrentValue = false, Callback = function(v) Settings.Stretch.Enabled = v ForceApplyStretch() end})
 ExtraTab:CreateSlider({Name = "Stretch Intensity (FOV)", Range = {70, 170}, Increment = 5, CurrentValue = 150, Callback = function(v) Settings.Stretch.Intensity = v if Settings.Stretch.Enabled then ForceApplyStretch() end end})
 
-Rayfield:Notify({Title = "Tsunami Loaded", Content = "Full working version 02.01.2026 | Team Check fixed | Constant Trigger", Duration = 15})
-print("Tsunami- Full working code loaded")
+Rayfield:Notify({Title = "SWILL Loaded", Content = "Full working version 02.01.2026 | Team Check fixed | Constant Trigger", Duration = 15})
+print("SWILL - Full working code loaded")
